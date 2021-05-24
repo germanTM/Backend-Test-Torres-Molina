@@ -1,0 +1,51 @@
+[
+    {
+        "pk": 1,
+        "model": "menu_service.daily_menu",
+        "fields": {
+            "name": "Lunes"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "menu_service.daily_menu",
+        "fields": {
+            "name": "Martes"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "menu_service.daily_menu",
+        "fields": {
+            "name": "Miércoles"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "menu_service.daily_menu",
+        "fields": {
+            "name": "Jueves"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "menu_service.daily_menu",
+        "fields": {
+            "name": "Viernes"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "menu_service.daily_menu",
+        "fields": {
+            "name": "Sábado"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "menu_service.daily_menu",
+        "fields": {
+            "name": "Domingo"
+        }
+    }
+]

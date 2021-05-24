@@ -1,0 +1,22 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Lista de menús{% endblock %}
+
+{% block content %}
+<table>
+
+
+{% for option in data %}
+    {% for value,key in option.items %}
+        <tr>
+            {% for items in key %}  
+                <td>{{items}}</td>
+            {% endfor %}
+            <td><a href="{% url 'view_ingredients' value%}">Seleccionar</a></td>
+        </tr>
+    {% endfor %}         
+{% endfor %}
+
+</table>
+<a href="{% url 'home' %}">Inicio</a>
+{% endblock %}

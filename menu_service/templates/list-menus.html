@@ -1,0 +1,19 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Lista de menús{% endblock %}
+
+{% block content %}
+<table>
+{% for menu in menus %}
+    <tr>
+        <td>{{ menu.name }}</td>
+        <td>
+            <a href="{% url 'menu_details' menu.id %}">Ver detalles</a>
+            <a href="{% url 'create_menu' menu.id %}">Editar</a>
+        </td>
+    </tr>
+{% endfor %}
+
+</table>
+<a href="{% url 'home' %}">Inicio</a>
+{% endblock %}

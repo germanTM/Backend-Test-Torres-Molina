@@ -1,0 +1,16 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Crear opción de comida{% endblock %}
+
+{% block content %}
+<form method="POST" action="">
+{% csrf_token %}
+<table>
+    <tr>
+        <td>{{form}}</td>
+    </tr>
+</table>
+
+<button type="submit" name="Create meal option">Crear</button>
+<a href="{% url 'home' %}">Inicio</a>
+{% endblock %}

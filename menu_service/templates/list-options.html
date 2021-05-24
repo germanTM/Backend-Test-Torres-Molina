@@ -1,0 +1,15 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Lista de menús{% endblock %}
+
+{% block content %}
+<table>
+{% for options in data %}
+    {% for item in options %}
+        <li>{{ item }}</li>
+    {% endfor %}
+{% endfor %}
+
+</table>
+<a href="{% url 'home' %}">Inicio</a>
+{% endblock %}

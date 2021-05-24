@@ -1,0 +1,17 @@
+{% include 'accounts/navbar.html' %}
+<h3>HOME</h3>
+{% if user.is_superuser %}
+<a href="{% url 'register' %}">Crear usuario</a>
+<a href="{% url 'create_ingredient' %}">Crear ingrediente</a>
+<a href="{% url 'create_dish' %}">Crear platillo</a>
+<a href="{% url 'create_meal_option' %}">Crear grupos de platillos</a>
+<a href="{% url 'create_menu' %}">Crear Menú</a>
+<a href="{% url 'list_menu' %}">Lista de Menús</a>
+<a href="{% url 'menu_details' %}">Ver menú del día</a>
+<a href="{% url 'all_orders' %}">Órdenes del día</a>
+<a href="{% url 'send_menu_by_slack' %}">Enviar menú por slack</a>
+{% endif %}
+{% if user.is_staff %}
+<a href="{% url 'show_menu_for_order' %}">Opciones para pedido</a>
+<a href="{% url 'my_order' %}">Ver pedido</a>
+{% endif %}

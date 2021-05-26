@@ -3,9 +3,16 @@
 {% block title %}Crear menú{% endblock %}
 
 {% block content %}
+{% for message in messages %}
+    <li class="{{ message.tags }}">
+        {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+    </li>
+{% endfor %}
+
+
 <form method="POST" action="">
 {% csrf_token %}
-{{form}}
-<button type="submit" name="Create menu">Crear</button>
-<a href="{% url 'home' %}">Inicio</a>
+    {{form}}
+    <button type="submit" name="Create menu">Crear</button>
+    <a href="{% url 'home' %}">Inicio</a>
 {% endblock %}

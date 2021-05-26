@@ -22,7 +22,6 @@ def register(response):
 @unautheticated_user
 def loginPage(request):
     messages.info(request, 'Session logged correctly')
-    print(request.user.is_authenticated)
     context = {}
     if request.method=='POST':
         

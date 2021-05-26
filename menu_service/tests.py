@@ -3,7 +3,7 @@ from django.test import TestCase, testcases
 from .models import Daily_Menu, Ingredient, Dish, Meal_Option, Menu
 from django.urls import reverse
 from django.contrib.auth.models import User
-from django.test.client import Client
+from django.test.client import Client, RequestFactory
 from rest_framework.test import APIClient
 from rest_framework.test import APIRequestFactory, force_authenticate
 import pytest
@@ -103,5 +103,21 @@ class CreateMenuView(TestCase):
         response = self.client.post(f'/createMenu', create_menu_request)
         self.assertEqual(response.status_code, 400)
 
-    def tearDown(self) -> None:
-        return super().tearDown()
+        def tearDown(self) -> None:
+            return super().tearDown()
+
+class MenuForOrderView(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.client = Client()
+        self.credentials = {
+            'username': 'nora',
+            'password': 'secret'}
+        User.objects.create_superuser(**self.credentials)
+
+    def create_simple_order(self):
+        self.user = User.objects.first()
+        self.client.force_login(self.user)
+        response = self.client.get(f'/menuOptions')
+        self.assertEqual(response.status_code, 302)
+

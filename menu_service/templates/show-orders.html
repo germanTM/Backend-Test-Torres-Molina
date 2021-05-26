@@ -3,15 +3,19 @@
 {% block title %}Órdenes{% endblock %}
 
 {% block content %}
+{% for message in messages %}
+    <li class="{{ message.tags }}">
+        {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+    </li>
+{% endfor %}
+
 <table>
 {% for options in data %}
     <tr>
-    {% for key, value in options.items %}
-        <li>{{ key }}</li>
-        {% for items in value %}
-            {{items}}
-        {% endfor %}
-    {% endfor %}
+        <td>{{options.ordered_dish.order.user}}</td>
+        <td>{{options.ordered_dish.ordered_dish}}</td>
+        <td>{{options.ingredient}}</td>
+        <td>{{options.quantity}}</td>
     </tr>
 {% endfor %}
 

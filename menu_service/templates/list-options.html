@@ -3,6 +3,12 @@
 {% block title %}Lista de menús{% endblock %}
 
 {% block content %}
+{% for message in messages %}
+    <li class="{{ message.tags }}">
+        {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+    </li>
+{% endfor %}
+
 <table>
 {% for options in data %}
     {% for item in options %}

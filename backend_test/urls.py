@@ -21,7 +21,6 @@ from .utils.healthz import healthz
 from django.conf import settings
 import os
 
-print(settings.MENU_URL)
 urlpatterns = [
     path("login", va.loginPage, name="login"),
     path("logout", va.logoutUser, name="logout"),

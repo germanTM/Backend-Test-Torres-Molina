@@ -1,7 +1,5 @@
 from django import forms
 import datetime
-from django.forms.widgets import Widget
-from django.contrib import messages
 from .models import Meal_Options_Dishes, Menu, Menu_Meal_Options, Ordered_Dishes, Ordered_Dishes_Ingredients_Details, Ingredient, Dish, Meal_Option, Daily_Menu, Dish_Ingredient, Order
 
 class CreateIngredientForm(forms.Form):
@@ -129,7 +127,6 @@ class CustomizeIngredientsForm(forms.Form):
             ingredientId = Ingredient.objects.get(pk = products[orderedIngredient])
             if products[orderedDish] not in processedDishes: 
                 saveOrderedDishes = Ordered_Dishes.objects.create(ordered_dish=dishId, order_id=orderId)
-
                 processedDishes.append(products[orderedDish])
             Ordered_Dishes_Ingredients_Details(ordered_dish=saveOrderedDishes, ingredient=ingredientId, quantity=products[orderedQuantity]).save()
         

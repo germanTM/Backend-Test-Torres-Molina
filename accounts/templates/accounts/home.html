@@ -1,4 +1,11 @@
 {% include 'accounts/navbar.html' %}
+{% for message in messages %}
+    <li class="{{ message.tags }}">
+    {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+    </li>
+{% endfor %}
+
+
 <h3>HOME</h3>
 {% if user.is_superuser %}
 <a href="{% url 'register' %}">Crear usuario</a>

@@ -3,6 +3,13 @@
 {% block title %}Crear opción de comida{% endblock %}
 
 {% block content %}
+{% for message in messages %}
+    <li class="{{ message.tags }}">
+    {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+    </li>
+{% endfor %}
+
+
 <form method="POST" action="">
 {% csrf_token %}
 {{form}}

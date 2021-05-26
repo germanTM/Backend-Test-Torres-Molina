@@ -3,19 +3,25 @@
 {% block title %}Lista de menús{% endblock %}
 
 {% block content %}
+
 <table>
-
-
-{% for option in data %}
-    {% for value,key in option.items %}
-        <tr>
-            {% for items in key %}  
-                <td>{{items}}</td>
+<tr>
+{% for option in optionDishRelation %}
+    <ul>{{option.meal_option}}     
+    {% for values in dishOptionRelation %}
+        {% if values.meal_option_id == option.meal_option_id%}
+            <li>{{values.dish}}:</li>
+            {% for ingredient in dishesIngredients %}
+                {% if ingredient.dish_id == values.dish_id%}
+                    <ul><li>{{ingredient.ingredient}}</li></ul>
+                {% endif %} 
             {% endfor %}
-            <td><a href="{% url 'view_ingredients' value%}">Seleccionar</a></td>
-        </tr>
-    {% endfor %}         
+        {% endif %} 
+    {% endfor %}
+    </ul>
+    <a href="{% url 'view_ingredients' option.meal_option_id%}">Seleccionar</a>
 {% endfor %}
+</tr>
 
 </table>
 <a href="{% url 'home' %}">Inicio</a>

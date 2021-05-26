@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
-from  .models import Order, Ordered_Dishes, Meal_Option, Meal_Options_Dishes, Menu, Ordered_Dishes_Ingredients_Details
+from  .models import Meal_Option, Meal_Options_Dishes, Menu, Ordered_Dishes_Ingredients_Details
 from django.contrib import messages
 from .decorators.decorators import admin_permissions, autheticated_user, autheticated_user
 from datetime import *
 from django.http import HttpResponse
 from django.conf import settings
 from . import tasks
+from django.views import View
 
 # Create your views here.
 from .forms import CustomizeIngredientsForm, CreateIngredientForm, CreateDishForm, CreateMealOptionForm, CreateMenuForm
@@ -21,9 +22,10 @@ def create_ingredient(request):
         if form.is_valid():
             ingredientCreation = CreateIngredientForm.save(request)
             if ingredientCreation.get('error') == 1:
+                messages.success(request, "Error creating message: Motive: "+ingredientCreation.get('message'))
                 return render(request, "create-ingredient.html", context, status=400)
             else:
-                messages.info(request, "Ingredient created succesfully")
+                messages.success(request, "Ingredient created succesfully")
                 return render(request, "create-ingredient.html", context, status=201)
     return render(request, "create-ingredient.html", context, status=302)
 
@@ -53,18 +55,23 @@ def create_meal_option(request):
     form = CreateMealOptionForm()
     if request.method == 'POST':
         form = CreateMealOptionForm(request.POST)
+        context = {'form':form}
         if form.is_valid():
             dishes = dict(request.POST)['dishes']
             optionName = request.POST.get('name')
             existingOption = Meal_Option.objects.filter(name=optionName)
             if existingOption:
-                messages.info(request, "Option is already registered in the data")
+                messages.info(request, "Option is already registered")
+                return render(request, "create-meal-option.html", context, status=400)
             else:
                 savedOption = Meal_Option.objects.create(name=optionName)
                 optionId = savedOption.id
                 for item in dishes:
                     dishOption = Meal_Options_Dishes(dish_id = item, meal_option_id = optionId)
                     dishOption.save()
+                messages.info(request, "Option created succesfully")
+                return render(request, "create-meal-option.html", context, status=200)
+        messages.info(request, "Create meal option form is incorrect")
     context = {'form':form}
     return render(request, "create-meal-option.html", context)
 
@@ -82,7 +89,7 @@ def create_menu(request, menu_id = 0):
                 messages.info(request, "Error at creating menu, motive:" +savedMenu.get('message'))
                 return render(request, "create-menu.html", context, status=400)
             else:
-                messages.info(request, "Dish created succesfully")
+                messages.info(request, "Menu created succesfully")
                 return render(request, "create-menu.html", context, status=201)
         else:
             messages.info(request, "Create menu form is incorrect")
@@ -94,25 +101,37 @@ def create_menu(request, menu_id = 0):
 def list_menu(request):
     listMenu = Menu.objects.all()
     context = {'menus':listMenu}
+    if listMenu.count() > 0:
+        context = {'menus':listMenu}
+        return render(request, 'list-menus.html', context)
+    messages.info(request, "There are no menus available")
     return render(request, 'list-menus.html', context)
 
 @autheticated_user
 @admin_permissions
 def menu_details(request, menu_id = 0):
     menuDetails = functions.menu_details(request, menu_id)
-    if menuDetails:
-        context = {'data': menuDetails}
-        return render(request, 'list-menu-options.html', context)
-    messages.info(request, "There's no menu for today")
+    if  menuDetails.get('error') == 1:
+        messages.info(request, "Error displaying menu details, motive: "+menuDetails.get('message'))
+    else:
+        context = {'optionDishRelation': menuDetails.get('optionDishRelation'), 'dishesIngredients':menuDetails.get('dishesIngredients'), 'dishOptionRelation':menuDetails.get('dishOptionRelation')}
+        return render(request, 'list-menu-options.html', context, status=200)
     return redirect('home')
 
 @autheticated_user
 def show_menu_for_order(request):
-    menuDetails = functions.menu_details(request)
-    if menuDetails:
-        context = {'data': menuDetails}
-        return render(request, 'list-menu-of-the-day.html', context)
-    messages.info(request, "There's no menu for today")
+    onTime = functions.get_limit_hour_for_order(settings.CHILE_TIME_ZONE)
+    onTime = True
+    if onTime:
+        menuDetails = functions.menu_details(request)
+        if menuDetails.get('error') == 1:
+            messages.info(request, "Error displaying menu details, motive: "+menuDetails.get('message'))
+        else:
+            context = {'optionDishRelation': menuDetails.get('optionDishRelation'), 'dishesIngredients':menuDetails.get('dishesIngredients'), 'dishOptionRelation':menuDetails.get('dishOptionRelation')}
+            return render(request, 'list-menu-of-the-day.html', context, status=200)
+    else:
+        messages.info(request, "The time for ordering has finished: ")
+        return redirect('home')
     return redirect('home')
 
 @autheticated_user
@@ -121,54 +140,34 @@ def view_ingredients(request, option):
     if request.method == 'POST':
         formRequest = request.POST
         form.save(formRequest, option, request)
+        messages.info(request, "Order successfully created")
+        return redirect('home')
     context={"form": form}
     return render(request, 'customize-ingredients.html', context)
 
+@autheticated_user
+@admin_permissions
 def view_orders(request):
-    resultData=[]
+    status=200
     today = date.today().strftime("%Y-%m-%d")
-    context = {}
-    dishIngredients = []
-    dishData = []
-    username=''
-    ordersDetails = Ordered_Dishes.objects.all()
-    for detail in ordersDetails:
-        dishIngredients = []
-        if detail.order.ordered_date != today:
-            username = detail.order.user.username
-            dishData = Ordered_Dishes_Ingredients_Details.objects.filter(ordered_dish_id=detail.id)
-            for ingredientData in dishData:
-                ingredientQuantityRelation = [str(ingredientData.ingredient), ingredientData.quantity]
-                dishIngredients.append(ingredientQuantityRelation)
-            dishData = [str(detail.ordered_dish),dishIngredients]
-        data = {username: dishData}
-        resultData.append(data)
-    context = {'data': resultData}
-    return render(request, 'show-orders.html', context)
+    ordersDetails = Ordered_Dishes_Ingredients_Details.objects.filter(ordered_dish__order__ordered_date=today).prefetch_related('ingredient','ordered_dish')
+    if ordersDetails.count() <= 0:
+        status=400
+        messages.info(request, "There are no orders for today")
+    context = {'data': ordersDetails}
+    return render(request, 'show-orders.html', context, status=status)
 
+@autheticated_user
 def my_order(request):
-    resultData=[]
-    today = date.today().strftime("%Y-%m-%d")
-    context = {}
-    dishIngredients = []
-    dishData = []
-    username=''
+    status=200
     currentUserId = request.user.id
-    ordersDetails = Ordered_Dishes.objects.all()
-    for detail in ordersDetails:
-        if detail.order.user.id == currentUserId:
-            dishIngredients = []
-            if detail.order.ordered_date == today:
-                username = detail.order.user.username
-                dishData = Ordered_Dishes_Ingredients_Details.objects.filter(ordered_dish_id=detail.id)
-                for ingredientData in dishData:
-                    ingredientQuantityRelation = [str(ingredientData.ingredient), ingredientData.quantity]
-                    dishIngredients.append(ingredientQuantityRelation)
-                dishData = [str(detail.ordered_dish),dishIngredients]
-            data = {username: dishData}
-            resultData.append(data)
-    context = {'data': resultData}
-    return render(request, 'show-orders.html', context)
+    today = date.today().strftime("%Y-%m-%d")
+    ordersDetails = Ordered_Dishes_Ingredients_Details.objects.filter(ordered_dish__order__ordered_date=today, ordered_dish__order__user=currentUserId).prefetch_related('ingredient','ordered_dish')
+    if ordersDetails.count() <= 0:
+        status=400
+        messages.info(request, "There are no orders for today")
+    context = {'data': ordersDetails}
+    return render(request, 'show-orders.html', context, status=status)
 
 @autheticated_user
 @admin_permissions
